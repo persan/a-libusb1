@@ -3,3 +3,8 @@
 
 # Ada Library Information
 *.ali
+
+.gen
+.obj
+*.a
+gnatinspect.db
