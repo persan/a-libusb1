@@ -1,0 +1,8 @@
+with "libusb1.gpr";
+library project Libusb1.Ada is
+
+   for Source_Dirs use ("src/**");
+   for Object_Dir use ".obj";
+   for Library_Name use "a-libusb1";
+   for Library_Dir use "lib";
+end Libusb1.Ada;

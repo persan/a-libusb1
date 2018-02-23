@@ -1,18 +1,8 @@
 pragma Ada_2012;
+with GNAT.Calendar;
 package body USB is
-   package bits_types_struct_timeval_h is
 
-   type timeval is record
-      tv_sec : aliased long;  -- /usr/include/bits/types/struct_timeval.h:10
-      tv_usec : aliased long;  -- /usr/include/bits/types/struct_timeval.h:11
-   end record;
-   pragma Convention (C_Pass_By_Copy, timeval);  -- /usr/include/bits/types/struct_timeval.h:8
-
-   end Bits_Types_Struct_Timeval_H;
    package Libusb_1_0_Libusb_H is
-      function Libusb_Cpu_To_Le16 (X : Interfaces.Unsigned_16) return Interfaces.Unsigned_16;  -- /usr/include/libusb-1.0/libusb.h:161
-      pragma Import (C, Libusb_Cpu_To_Le16, "libusb_cpu_to_le16");
-
       function Libusb_Init (Ctx : System.Address) return Int;  -- /usr/include/libusb-1.0/libusb.h:1306
       pragma Import (C, Libusb_Init, "libusb_init");
 
@@ -392,15 +382,15 @@ package body USB is
       procedure Libusb_Unlock_Event_Waiters (Ctx : System.Address);  -- /usr/include/libusb-1.0/libusb.h:1814
       pragma Import (C, Libusb_Unlock_Event_Waiters, "libusb_unlock_event_waiters");
 
-      function Libusb_Wait_For_Event (Ctx : System.Address; Tv : access Bits_Types_Struct_Timeval_H.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1815
+      function Libusb_Wait_For_Event (Ctx : System.Address; Tv : access GNAT.Calendar.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1815
       pragma Import (C, Libusb_Wait_For_Event, "libusb_wait_for_event");
 
-      function Libusb_Handle_Events_Timeout (Ctx : System.Address; Tv : access Bits_Types_Struct_Timeval_H.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1817
+      function Libusb_Handle_Events_Timeout (Ctx : System.Address; Tv : access GNAT.Calendar.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1817
       pragma Import (C, Libusb_Handle_Events_Timeout, "libusb_handle_events_timeout");
 
       function Libusb_Handle_Events_Timeout_Completed
         (Ctx       : System.Address;
-         Tv        : access Bits_Types_Struct_Timeval_H.Timeval;
+         Tv        : access GNAT.Calendar.Timeval;
          Completed : access Int) return Int;  -- /usr/include/libusb-1.0/libusb.h:1819
       pragma Import (C, Libusb_Handle_Events_Timeout_Completed, "libusb_handle_events_timeout_completed");
 
@@ -410,13 +400,13 @@ package body USB is
       function Libusb_Handle_Events_Completed (Ctx : System.Address; Completed : access Int) return Int;  -- /usr/include/libusb-1.0/libusb.h:1822
       pragma Import (C, Libusb_Handle_Events_Completed, "libusb_handle_events_completed");
 
-      function Libusb_Handle_Events_Locked (Ctx : System.Address; Tv : access Bits_Types_Struct_Timeval_H.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1823
+      function Libusb_Handle_Events_Locked (Ctx : System.Address; Tv : access GNAT.Calendar.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1823
       pragma Import (C, Libusb_Handle_Events_Locked, "libusb_handle_events_locked");
 
       function Libusb_Pollfds_Handle_Timeouts (Ctx : System.Address) return Int;  -- /usr/include/libusb-1.0/libusb.h:1825
       pragma Import (C, Libusb_Pollfds_Handle_Timeouts, "libusb_pollfds_handle_timeouts");
 
-      function Libusb_Get_Next_Timeout (Ctx : System.Address; Tv : access Bits_Types_Struct_Timeval_H.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1826
+      function Libusb_Get_Next_Timeout (Ctx : System.Address; Tv : access GNAT.Calendar.Timeval) return Int;  -- /usr/include/libusb-1.0/libusb.h:1826
       pragma Import (C, Libusb_Get_Next_Timeout, "libusb_get_next_timeout");
 
       type Libusb_Pollfd is record
@@ -490,7 +480,9 @@ package body USB is
       return Interfaces.Unsigned_16
    is
    begin
-      return Libusb_cpu_to_le16 (X);
+      --  Generated stub: replace with real body!
+      pragma Compile_Time_Warning (Standard.True, "Libusb_1_0_Libusb_H unimplemented");
+      return raise Program_Error with "Unimplemented procedure Libusb_1_0_Libusb_H";
    end Cpu_To_Le16;
 
 
@@ -570,17 +562,19 @@ package body USB is
    ---------------------
 
    function Get_Device_List
-     (ctx : context; list : System.Address) return size_t
+     (Ctx : Context'Class) return Device_List
    is
    begin
-      return Libusb_Get_Device_List (Ctx.Ctx, List);
+      return ret : Device_List do
+         Ret.Len := Libusb_Get_Device_List (Ctx.Ctx, Ret.List'Address);
+      end return;
    end Get_Device_List;
 
    ----------------------
    -- free_device_list --
    ----------------------
 
-   procedure Free_Device_List (List : System.Address; Unref_Devices : Int) is
+   procedure Free_Device_List (list : Device_Access; unref_devices : int) is
    begin
       --  Generated stub: replace with real body!
       pragma Compile_Time_Warning (Standard.True, "free_device_list unimplemented");
@@ -591,7 +585,7 @@ package body USB is
    -- ref_device --
    ----------------
 
-   function Ref_Device (Dev : System.Address) return System.Address is
+   function Ref_Device (dev : Device_Access) return Device_Access is
    begin
       --  Generated stub: replace with real body!
       pragma Compile_Time_Warning (Standard.True, "ref_device unimplemented");
@@ -1604,9 +1598,7 @@ package body USB is
 
    function Try_Lock_Events (ctx : context) return int is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "try_lock_events unimplemented");
-      return raise Program_Error with "Unimplemented function try_lock_events";
+      return Libusb_Try_Lock_Events(Ctx.Ctx);
    end Try_Lock_Events;
 
    -----------------
@@ -1615,9 +1607,7 @@ package body USB is
 
    procedure Lock_Events (ctx : context) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "lock_events unimplemented");
-      raise Program_Error with "Unimplemented procedure lock_events";
+      Libusb_Lock_Events(Ctx.Ctx);
    end Lock_Events;
 
    -------------------
@@ -1626,9 +1616,7 @@ package body USB is
 
    procedure Unlock_Events (ctx : context) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "unlock_events unimplemented");
-      raise Program_Error with "Unimplemented procedure unlock_events";
+      Libusb_unLock_Events(Ctx.Ctx);
    end Unlock_Events;
 
    -----------------------
@@ -1637,9 +1625,7 @@ package body USB is
 
    function Event_Handling_Ok (ctx : context) return int is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "event_handling_ok unimplemented");
-      return raise Program_Error with "Unimplemented function event_handling_ok";
+      return Libusb_Event_Handling_Ok(Ctx.Ctx);
    end Event_Handling_Ok;
 
    --------------------------
@@ -1648,9 +1634,7 @@ package body USB is
 
    function Event_Handler_Active (ctx : context) return int is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "event_handler_active unimplemented");
-      return raise Program_Error with "Unimplemented function event_handler_active";
+      return Libusb_Event_Handler_Active(Ctx.Ctx);
    end Event_Handler_Active;
 
    -----------------------------
@@ -1659,9 +1643,7 @@ package body USB is
 
    procedure Interrupt_Event_Handler (ctx : context) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "interrupt_event_handler unimplemented");
-      raise Program_Error with "Unimplemented procedure interrupt_event_handler";
+      Libusb_Interrupt_Event_Handler(Ctx.Ctx);
    end Interrupt_Event_Handler;
 
    ------------------------
@@ -1670,9 +1652,7 @@ package body USB is
 
    procedure Lock_Event_Waiters (ctx : context) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "lock_event_waiters unimplemented");
-      raise Program_Error with "Unimplemented procedure lock_event_waiters";
+      Libusb_Lock_Event_Waiters(Ctx.Ctx);
    end Lock_Event_Waiters;
 
    --------------------------
@@ -1681,20 +1661,17 @@ package body USB is
 
    procedure Unlock_Event_Waiters (ctx : context) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "unlock_event_waiters unimplemented");
-      raise Program_Error with "Unimplemented procedure unlock_event_waiters";
+      Libusb_Unlock_Event_Waiters(Ctx.Ctx);
    end Unlock_Event_Waiters;
 
    --------------------
    -- wait_for_event --
    --------------------
 
-   function Wait_For_Event (ctx : context; tv : Duration) return int is
+   function Wait_For_Event (Ctx : Context; Tv : Duration) return Int is
+      L_tv : aliased GNAT.Calendar.Timeval := GNAT.Calendar.To_Timeval (Tv);
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "wait_for_event unimplemented");
-      return raise Program_Error with "Unimplemented function wait_for_event";
+      return Libusb_Wait_For_Event (Ctx.Ctx, L_Tv'Access);
    end Wait_For_Event;
 
    ---------------------------
@@ -1704,10 +1681,9 @@ package body USB is
    function Handle_Events_Timeout
      (ctx : context; tv : Duration) return int
    is
+      L_tv : aliased GNAT.Calendar.Timeval := GNAT.Calendar.To_Timeval (Tv);
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "handle_events_timeout unimplemented");
-      return raise Program_Error with "Unimplemented function handle_events_timeout";
+      return Libusb_Handle_Events_Timeout (Ctx.Ctx, L_Tv'Access);
    end Handle_Events_Timeout;
 
    -------------------------------------
@@ -1716,13 +1692,10 @@ package body USB is
 
    function Handle_Events_Timeout_Completed
      (ctx : context;
-      tv : Duration;
       completed : access int) return int
    is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "handle_events_timeout_completed unimplemented");
-      return raise Program_Error with "Unimplemented function handle_events_timeout_completed";
+      return Libusb_Handle_Events_Completed (Ctx.Ctx,  Completed);
    end Handle_Events_Timeout_Completed;
 
    -------------------
@@ -1731,9 +1704,7 @@ package body USB is
 
    function Handle_Events (ctx : context) return int is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "handle_events unimplemented");
-      return raise Program_Error with "Unimplemented function handle_events";
+      return Libusb_Handle_Events (Ctx.Ctx);
    end Handle_Events;
 
    -----------------------------
@@ -1744,9 +1715,7 @@ package body USB is
      (ctx : context; completed : access int) return int
    is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "handle_events_completed unimplemented");
-      return raise Program_Error with "Unimplemented function handle_events_completed";
+      return Libusb_Handle_Events_Completed (Ctx.Ctx,Completed);
    end Handle_Events_Completed;
 
    --------------------------
@@ -1756,10 +1725,9 @@ package body USB is
    function Handle_Events_Locked
      (ctx : context; tv : Duration) return int
    is
+      L_tv : aliased GNAT.Calendar.Timeval := GNAT.Calendar.To_Timeval (Tv);
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "handle_events_locked unimplemented");
-      return raise Program_Error with "Unimplemented function handle_events_locked";
+      return Libusb_Handle_Events_Locked (Ctx.Ctx, L_Tv'Access);
    end Handle_Events_Locked;
 
    -----------------------------
@@ -1768,9 +1736,7 @@ package body USB is
 
    function Pollfds_Handle_Timeouts (ctx : context) return int is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "pollfds_handle_timeouts unimplemented");
-      return raise Program_Error with "Unimplemented function pollfds_handle_timeouts";
+      return Libusb_Pollfds_Handle_Timeouts (Ctx.Ctx);
    end Pollfds_Handle_Timeouts;
 
    ----------------------
@@ -1778,14 +1744,13 @@ package body USB is
    ----------------------
 
    function Get_Next_Timeout
-     (Ctx : System.Address;
+     (Ctx : Context;
       Tv  : Duration)
       return Int
    is
+      L_tv : aliased GNAT.Calendar.Timeval := GNAT.Calendar.To_Timeval (Tv);
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "get_next_timeout unimplemented");
-      return raise Program_Error with "Unimplemented function get_next_timeout";
+      return Libusb_Get_Next_Timeout (Ctx.Ctx, L_Tv'Access);
    end Get_Next_Timeout;
 
    -----------------
@@ -1794,9 +1759,7 @@ package body USB is
 
    function Get_Pollfds (ctx : context) return System.Address is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "get_pollfds unimplemented");
-      return raise Program_Error with "Unimplemented function get_pollfds";
+      return Libusb_Get_Pollfds (Ctx.Ctx);
    end Get_Pollfds;
 
    ------------------
@@ -1805,9 +1768,7 @@ package body USB is
 
    procedure Free_Pollfds (Pollfds : System.Address) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "free_pollfds unimplemented");
-      raise Program_Error with "Unimplemented procedure free_pollfds";
+      Libusb_Free_Pollfds (Pollfds);
    end Free_Pollfds;
 
    --------------------------
